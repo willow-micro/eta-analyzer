@@ -54,6 +54,33 @@ def ProcessTimeSpan(df, figurePath):
     plt.savefig(figurePath)
     plt.close("all")
 
+def ProcessLFHF(df, figurePath):
+    #print(df.columns)
+    dfPivotDeltaSum = pd.pivot_table(df, index="Category", values="LFHF(Element:Delta)", margins=False, aggfunc=np.sum)
+    dfPivotDeltaSum = dfPivotDeltaSum.rename(columns={"LFHF(Element:Delta)": "Total LF/HF Delta"})
+    dfPivotDeltaSumSorted = dfPivotDeltaSum.sort_values("Total LF/HF Delta", ascending=False)
+
+    dfPivotMean = pd.pivot_table(df, index="Category", values="LFHF(Element)", margins=False, aggfunc=np.mean)
+    dfPivotMean = dfPivotMean.rename(columns={"LFHF(Element)": "Mean LF/HF"})
+    dfPivotMeanSorted = dfPivotMean.sort_values("Mean LF/HF", ascending=False)
+
+    currentFigSize = list(plt.rcParams["figure.figsize"])
+    multiFigSize = [currentFigSize[0] * 2, currentFigSize[1] * 2]
+    fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
+    dfPivotDeltaSum.plot(ax=axes[0, 0],
+                 kind="bar", title="Total LF/HF delta by categories", legend=None,
+                 xlabel="Category of html elements", ylabel="Total LF/HF delta")
+    dfPivotDeltaSumSorted.plot(ax=axes[1, 0],
+                 kind="bar", title="Total LF/HF delta by categories (sorted)", legend=None,
+                 xlabel="Category of html elements", ylabel="Total LF/HF delta")
+    dfPivotMean.plot(ax=axes[0, 1],
+                 kind="bar", title="Mean LF/HF by categories", legend=None,
+                 xlabel="Category of html elements", ylabel="Mean LF/HF")
+    dfPivotMeanSorted.plot(ax=axes[1, 1],
+                 kind="bar", title="Mean LF/HF by categories (sorted)", legend=None,
+                 xlabel="Category of html elements", ylabel="Mean LF/HF")
+    plt.savefig(figurePath)
+    plt.close("all")
 
 # Main Function
 def Main(identifierString, processedCsvPath, processedCsvEncoding, outputDir, outputFormat):
@@ -65,6 +92,10 @@ def Main(identifierString, processedCsvPath, processedCsvEncoding, outputDir, ou
     # Time span
     timeSpanFigurePath = outputDir + "/eta_timespan_" + identifierString + "." + outputFormat
     ProcessTimeSpan(dfFiltered, timeSpanFigurePath)
+
+    # LF/HF
+    lfhfFigurePath = outputDir + "/eta_lfhf_" + identifierString + "." + outputFormat
+    ProcessLFHF(dfFiltered, lfhfFigurePath)
 
 
 if __name__ == "__main__":
