@@ -28,19 +28,29 @@ def CreateDataFrameFrom(csvPath, csvEncoding):
 
 def ProcessTimeSpan(df, figurePath):
     #print(df.columns)
-    dfPivot = pd.pivot_table(df, index="Category", values="TimeSpan", margins=False, aggfunc=np.sum)
-    dfPivot = dfPivot.rename(columns={"TimeSpan": "Total fixation time"})
-    dfPivotSorted = dfPivot.sort_values("Total fixation time", ascending=False)
+    dfPivotSum = pd.pivot_table(df, index="Category", values="TimeSpan", margins=False, aggfunc=np.sum)
+    dfPivotSum = dfPivotSum.rename(columns={"TimeSpan": "Total fixation time"})
+    dfPivotSumSorted = dfPivotSum.sort_values("Total fixation time", ascending=False)
+
+    dfPivotMean = pd.pivot_table(df, index="Category", values="TimeSpan", margins=False, aggfunc=np.mean)
+    dfPivotMean = dfPivotMean.rename(columns={"TimeSpan": "Mean fixation time"})
+    dfPivotMeanSorted = dfPivotMean.sort_values("Mean fixation time", ascending=False)
 
     currentFigSize = list(plt.rcParams["figure.figsize"])
-    multiFigSize = [currentFigSize[0], currentFigSize[1] * 2]
-    fig, axes = plt.subplots(nrows=2, ncols=1, figsize=tuple(multiFigSize))
-    dfPivot.plot(ax=axes[0],
+    multiFigSize = [currentFigSize[0] * 2, currentFigSize[1] * 2]
+    fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
+    dfPivotSum.plot(ax=axes[0, 0],
                  kind="bar", title="Total fixation time by categories", legend=None,
                  xlabel="Category of html elements", ylabel="Total fixation time [ms]")
-    dfPivotSorted.plot(ax=axes[1],
+    dfPivotSumSorted.plot(ax=axes[1, 0],
                  kind="bar", title="Total fixation time by categories (sorted)", legend=None,
                  xlabel="Category of html elements", ylabel="Total fixation time [ms]")
+    dfPivotMean.plot(ax=axes[0, 1],
+                 kind="bar", title="Mean fixation time by categories", legend=None,
+                 xlabel="Category of html elements", ylabel="Mean fixation time [ms]")
+    dfPivotMeanSorted.plot(ax=axes[1, 1],
+                 kind="bar", title="Mean fixation time by categories (sorted)", legend=None,
+                 xlabel="Category of html elements", ylabel="Mean fixation time [ms]")
     plt.savefig(figurePath)
     plt.close("all")
 
@@ -98,7 +108,7 @@ if __name__ == "__main__":
     plt.rcParams["figure.subplot.right"] = 0.9
     plt.rcParams["figure.subplot.bottom"] = 0.15
     plt.rcParams["figure.subplot.top"] = 0.95
-    plt.rcParams["figure.subplot.wspace"] = 0.0
+    plt.rcParams["figure.subplot.wspace"] = 0.2
     plt.rcParams["figure.subplot.hspace"] = 0.6
 
     Main(args.identifier, args.source, args.input_encoding, formattedOutputDir, args.output_format)
