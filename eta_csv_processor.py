@@ -322,8 +322,8 @@ if __name__ == "__main__":
                         help="Unique identifier for output csv files \n (default: YYYYMMDDhhmmss)")
     parser.add_argument("-e", "--input-encoding", type=str, choices=["utf_8", "shift_jis"], default="shift_jis",
                         help="Encoding of the input csv file \n (default: shift_jis)")
-    parser.add_argument("-d", "--output-dir", type=str, default="out",
-                        help="The destination directory for output csv files \n (default: out)")
+    parser.add_argument("-d", "--output-dir", type=str, default="csvout",
+                        help="The destination directory for output csv files \n (default: csvout)")
     parser.add_argument("-E", "--output-encoding", type=str, choices=["utf_8", "shift_jis"], default="shift_jis",
                         help="Encoding of output csv files \n (default: shift_jis)")
     parser.add_argument("--write-lfhf-computed", action="store_true",

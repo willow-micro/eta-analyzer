@@ -79,20 +79,14 @@ if __name__ == "__main__":
                         help="Unique identifier for output image files \n (default: YYYYMMDDhhmmss)")
     parser.add_argument("-e", "--input-encoding", type=str, choices=["utf_8", "shift_jis"], default="shift_jis",
                         help="Encoding of the input csv file \n (default: shift_jis)")
-    parser.add_argument("-d", "--output-dir", type=str, default="out",
-                        help="The destination directory for output image files \n (default: out)")
+    parser.add_argument("-d", "--output-dir", type=str, default="plotout",
+                        help="The destination directory for output image files \n (default: plotout)")
     parser.add_argument("-F", "--output-format", type=str, choices=["png", "pdf", "svg"], default="png",
                         help="File format of output image files \n (default: png)")
-    # parser.add_argument("-S", "--output-size", type=float, nargs=2, default=[6.4, 4.8],
-    #                     help="Image size for figsize in the matplotlib \n (default: 6.4 4.8)")
     parser.add_argument("-S", "--output-size", type=float, nargs=2, default=[8, 6],
                         help="Image size for figsize in the matplotlib \n (default: 8 6)")
-    # parser.add_argument("-D", "--output-dpi", type=float, default=100.0,
-    #                     help="Image DPI \n (default: 100.0)")
     parser.add_argument("-D", "--output-dpi", type=float, default=300.0,
                         help="Image DPI \n (default: 300.0)")
-    # parser.add_argument("-C", "--output-color", type=str, choices=mpl.colors.cnames.keys(), default="orange",
-    #                     help="Output plot color name defined in the matplotlib \n (default: orange)")
     args = parser.parse_args()
 
     # Get output directory path
