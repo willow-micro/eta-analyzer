@@ -103,7 +103,7 @@ if __name__ == "__main__":
     currentDatetime = datetime.datetime.now()
     currentDatetimeString = currentDatetime.strftime("%Y%m%d%H%M%S")
 
-    parser = argparse.ArgumentParser(description="ETA-Analyzer: CSV Processor",
+    parser = argparse.ArgumentParser(description="ETA-Analyzer: CSV Plotter",
                                      formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("source", type=str,
                         help="Processed csv file created via eta_csv_processor.py")
@@ -116,9 +116,11 @@ if __name__ == "__main__":
     parser.add_argument("-F", "--output-format", type=str, choices=["png", "pdf", "svg"], default="png",
                         help="File format of output image files \n (default: png)")
     parser.add_argument("-S", "--output-size", type=float, nargs=2, default=[8, 6],
-                        help="Image size for figsize in the matplotlib \n (default: 8 6)")
+                        help="Output size for figures in images \n (default: 8 6)")
     parser.add_argument("-D", "--output-dpi", type=float, default=300.0,
-                        help="Image DPI \n (default: 300.0)")
+                        help="Output DPI \n (default: 300.0)")
+    parser.add_argument("-G", "--output-grid-disable", action="store_true",
+                        help="Disable grid on figures on output images")
     args = parser.parse_args()
 
     # Get output directory path
@@ -136,7 +138,10 @@ if __name__ == "__main__":
     plt.rcParams["figure.subplot.top"] = 0.95
     plt.rcParams["figure.subplot.wspace"] = 0.15
     plt.rcParams["figure.subplot.hspace"] = 0.6
-    plt.rcParams["grid.alpha"] = 0.3
+    if args.output_grid_disable:
+        plt.rcParams["grid.alpha"] = 0.0
+    else:
+        plt.rcParams["grid.alpha"] = 0.3
     plt.rcParams["grid.color"] = "gray"
     plt.rcParams["grid.linestyle"] = "dotted"
 
