@@ -20,6 +20,7 @@ import numpy as np
 # Configs
 
 # Global Variables
+Colormaps = ["Pastel1", "Pastel2"]
 
 # Functions
 def CreateDataFrameFrom(csvPath, csvEncoding):
@@ -41,16 +42,16 @@ def ProcessTimeSpan(df, figurePath):
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
     dfPivotSum.plot(ax=axes[0, 0],
                     kind="bar", title="Total fixation time by categories", legend=None, grid=True,
-                    xlabel="Category of html elements", ylabel="Total fixation time [ms]")
+                    xlabel="Category of html elements", ylabel="Total fixation time [ms]", colormap=Colormaps[0])
     dfPivotSumSorted.plot(ax=axes[1, 0],
                           kind="bar", title="Total fixation time by categories (sorted)", legend=None, grid=True,
-                          xlabel="Category of html elements", ylabel="Total fixation time [ms]")
+                          xlabel="Category of html elements", ylabel="Total fixation time [ms]", colormap=Colormaps[0])
     dfPivotMean.plot(ax=axes[0, 1],
                      kind="bar", title="Mean fixation time by categories", legend=None, grid=True,
-                     xlabel="Category of html elements", ylabel="Mean fixation time [ms]")
+                     xlabel="Category of html elements", ylabel="Mean fixation time [ms]", colormap=Colormaps[1])
     dfPivotMeanSorted.plot(ax=axes[1, 1],
                            kind="bar", title="Mean fixation time by categories (sorted)", legend=None, grid=True,
-                           xlabel="Category of html elements", ylabel="Mean fixation time [ms]")
+                           xlabel="Category of html elements", ylabel="Mean fixation time [ms]", colormap=Colormaps[1])
     plt.savefig(figurePath)
     plt.close("all")
 
@@ -69,16 +70,16 @@ def ProcessLFHF(df, figurePath):
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
     dfPivotDeltaSum.plot(ax=axes[0, 0],
                          kind="bar", title="Total LF/HF delta by categories", legend=None, grid=True,
-                         xlabel="Category of html elements", ylabel="Total LF/HF delta")
+                         xlabel="Category of html elements", ylabel="Total LF/HF delta", colormap=Colormaps[0])
     dfPivotDeltaSumSorted.plot(ax=axes[1, 0],
                                kind="bar", title="Total LF/HF delta by categories (sorted)", legend=None, grid=True,
-                               xlabel="Category of html elements", ylabel="Total LF/HF delta")
+                               xlabel="Category of html elements", ylabel="Total LF/HF delta", colormap=Colormaps[0])
     dfPivotMean.plot(ax=axes[0, 1],
                      kind="bar", title="Mean LF/HF by categories", legend=None, grid=True,
-                     xlabel="Category of html elements", ylabel="Mean LF/HF")
+                     xlabel="Category of html elements", ylabel="Mean LF/HF", colormap=Colormaps[1])
     dfPivotMeanSorted.plot(ax=axes[1, 1],
                            kind="bar", title="Mean LF/HF by categories (sorted)", legend=None, grid=True,
-                           xlabel="Category of html elements", ylabel="Mean LF/HF")
+                           xlabel="Category of html elements", ylabel="Mean LF/HF", colormap=Colormaps[1])
     plt.savefig(figurePath)
     plt.close("all")
 
