@@ -98,11 +98,11 @@ if __name__ == "__main__":
     # Set pyplot configs
     plt.rcParams["figure.figsize"] = args.output_size
     plt.rcParams["figure.dpi"] = args.output_dpi
-    plt.rcParams["figure.subplot.left"] = 0.15
-    plt.rcParams["figure.subplot.right"] = 0.9
+    plt.rcParams["figure.subplot.left"] = 0.08
+    plt.rcParams["figure.subplot.right"] = 0.95
     plt.rcParams["figure.subplot.bottom"] = 0.15
     plt.rcParams["figure.subplot.top"] = 0.95
-    plt.rcParams["figure.subplot.wspace"] = 0.2
+    plt.rcParams["figure.subplot.wspace"] = 0.15
     plt.rcParams["figure.subplot.hspace"] = 0.6
 
     Main(args.identifier, args.source, args.input_encoding, formattedOutputDir, args.output_format)
