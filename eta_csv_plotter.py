@@ -40,17 +40,17 @@ def ProcessTimeSpan(df, figurePath):
     multiFigSize = [currentFigSize[0] * 2, currentFigSize[1] * 2]
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
     dfPivotSum.plot(ax=axes[0, 0],
-                 kind="bar", title="Total fixation time by categories", legend=None,
-                 xlabel="Category of html elements", ylabel="Total fixation time [ms]")
+                    kind="bar", title="Total fixation time by categories", legend=None, grid=True,
+                    xlabel="Category of html elements", ylabel="Total fixation time [ms]")
     dfPivotSumSorted.plot(ax=axes[1, 0],
-                 kind="bar", title="Total fixation time by categories (sorted)", legend=None,
-                 xlabel="Category of html elements", ylabel="Total fixation time [ms]")
+                          kind="bar", title="Total fixation time by categories (sorted)", legend=None, grid=True,
+                          xlabel="Category of html elements", ylabel="Total fixation time [ms]")
     dfPivotMean.plot(ax=axes[0, 1],
-                 kind="bar", title="Mean fixation time by categories", legend=None,
-                 xlabel="Category of html elements", ylabel="Mean fixation time [ms]")
+                     kind="bar", title="Mean fixation time by categories", legend=None, grid=True,
+                     xlabel="Category of html elements", ylabel="Mean fixation time [ms]")
     dfPivotMeanSorted.plot(ax=axes[1, 1],
-                 kind="bar", title="Mean fixation time by categories (sorted)", legend=None,
-                 xlabel="Category of html elements", ylabel="Mean fixation time [ms]")
+                           kind="bar", title="Mean fixation time by categories (sorted)", legend=None, grid=True,
+                           xlabel="Category of html elements", ylabel="Mean fixation time [ms]")
     plt.savefig(figurePath)
     plt.close("all")
 
@@ -68,17 +68,17 @@ def ProcessLFHF(df, figurePath):
     multiFigSize = [currentFigSize[0] * 2, currentFigSize[1] * 2]
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
     dfPivotDeltaSum.plot(ax=axes[0, 0],
-                 kind="bar", title="Total LF/HF delta by categories", legend=None,
-                 xlabel="Category of html elements", ylabel="Total LF/HF delta")
+                         kind="bar", title="Total LF/HF delta by categories", legend=None, grid=True,
+                         xlabel="Category of html elements", ylabel="Total LF/HF delta")
     dfPivotDeltaSumSorted.plot(ax=axes[1, 0],
-                 kind="bar", title="Total LF/HF delta by categories (sorted)", legend=None,
-                 xlabel="Category of html elements", ylabel="Total LF/HF delta")
+                               kind="bar", title="Total LF/HF delta by categories (sorted)", legend=None, grid=True,
+                               xlabel="Category of html elements", ylabel="Total LF/HF delta")
     dfPivotMean.plot(ax=axes[0, 1],
-                 kind="bar", title="Mean LF/HF by categories", legend=None,
-                 xlabel="Category of html elements", ylabel="Mean LF/HF")
+                     kind="bar", title="Mean LF/HF by categories", legend=None, grid=True,
+                     xlabel="Category of html elements", ylabel="Mean LF/HF")
     dfPivotMeanSorted.plot(ax=axes[1, 1],
-                 kind="bar", title="Mean LF/HF by categories (sorted)", legend=None,
-                 xlabel="Category of html elements", ylabel="Mean LF/HF")
+                           kind="bar", title="Mean LF/HF by categories (sorted)", legend=None, grid=True,
+                           xlabel="Category of html elements", ylabel="Mean LF/HF")
     plt.savefig(figurePath)
     plt.close("all")
 
@@ -135,5 +135,8 @@ if __name__ == "__main__":
     plt.rcParams["figure.subplot.top"] = 0.95
     plt.rcParams["figure.subplot.wspace"] = 0.15
     plt.rcParams["figure.subplot.hspace"] = 0.6
+    plt.rcParams["grid.alpha"] = 0.3
+    plt.rcParams["grid.color"] = "gray"
+    plt.rcParams["grid.linestyle"] = "dotted"
 
     Main(args.identifier, args.source, args.input_encoding, formattedOutputDir, args.output_format)
