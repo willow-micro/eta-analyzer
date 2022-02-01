@@ -27,6 +27,22 @@ def CreateDataFrameFrom(csvPath, csvEncoding):
     dataFrame = pd.read_csv(csvPath, encoding=csvEncoding)
     return dataFrame
 
+def SetSubPlotMarginFor4PlotsWithCategories():
+    plt.rcParams["figure.subplot.left"] = 0.08
+    plt.rcParams["figure.subplot.right"] = 0.95
+    plt.rcParams["figure.subplot.bottom"] = 0.15
+    plt.rcParams["figure.subplot.top"] = 0.95
+    plt.rcParams["figure.subplot.wspace"] = 0.15
+    plt.rcParams["figure.subplot.hspace"] = 0.6
+
+def SetSubPlotMarginFor2PlotsWithTime():
+    plt.rcParams["figure.subplot.left"] = 0.12
+    plt.rcParams["figure.subplot.right"] = 0.95
+    plt.rcParams["figure.subplot.bottom"] = 0.1
+    plt.rcParams["figure.subplot.top"] = 0.9
+    plt.rcParams["figure.subplot.wspace"] = 0.0
+    plt.rcParams["figure.subplot.hspace"] = 0.3
+
 def ProcessFixationTime(identifier, df, figurePath):
     #print(df.columns)
     dfPivotSum = pd.pivot_table(df, index="Category", values="TimeSpan", margins=False, aggfunc=np.sum)
@@ -37,6 +53,7 @@ def ProcessFixationTime(identifier, df, figurePath):
     dfPivotMean = dfPivotMean.rename(columns={"TimeSpan": "Mean fixation time"})
     dfPivotMeanSorted = dfPivotMean.sort_values("Mean fixation time", ascending=False)
 
+    SetSubPlotMarginFor4PlotsWithCategories()
     currentFigSize = list(plt.rcParams["figure.figsize"])
     multiFigSize = [currentFigSize[0] * 2, currentFigSize[1] * 2]
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
@@ -54,6 +71,7 @@ def ProcessFixationTime(identifier, df, figurePath):
                            xlabel="Category of html elements", ylabel="Mean fixation time [ms]", colormap=Colormaps[1])
     plt.savefig(figurePath)
     plt.close("all")
+    print("Saved " + figurePath)
 
 def ProcessLFHFSummary(identifier, df, figurePath):
     #print(df.columns)
@@ -65,6 +83,7 @@ def ProcessLFHFSummary(identifier, df, figurePath):
     dfPivotMean = dfPivotMean.rename(columns={"LFHF(Element)": "Mean LF/HF"})
     dfPivotMeanSorted = dfPivotMean.sort_values("Mean LF/HF", ascending=False)
 
+    SetSubPlotMarginFor4PlotsWithCategories()
     currentFigSize = list(plt.rcParams["figure.figsize"])
     multiFigSize = [currentFigSize[0] * 2, currentFigSize[1] * 2]
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
@@ -82,6 +101,41 @@ def ProcessLFHFSummary(identifier, df, figurePath):
                            xlabel="Category of html elements", ylabel="Mean LF/HF", colormap=Colormaps[1])
     plt.savefig(figurePath)
     plt.close("all")
+    print("Saved " + figurePath)
+
+def ProcessLFHFTimeline(identifier, df, figurePath):
+    # print(df.columns)
+    # > ['#', 'Event', 'Category', 'AppTime', 'X', 'Y', 'AriaLabel', 'TimeSpan', 'LFHF(Element)', 'LFHF(Element:Delta)']
+    convertMillSecToSec = lambda t: round(t / 1000.0)
+    dfLFHFElement = df.drop(['#', 'Event', 'Category', 'X', 'Y', 'AriaLabel', 'TimeSpan', 'LFHF(Element:Delta)'], axis=1)
+    dfLFHFElement = dfLFHFElement.dropna(subset=["LFHF(Element)"])
+    dfLFHFElement["AppTime"] = dfLFHFElement["AppTime"].apply(convertMillSecToSec)
+    dfLFHFElementDelta = df.drop(['#', 'Event', 'Category', 'X', 'Y', 'AriaLabel', 'TimeSpan', 'LFHF(Element)'], axis=1)
+    dfLFHFElementDelta = dfLFHFElementDelta.dropna(subset=["LFHF(Element:Delta)"])
+    dfLFHFElementDelta["AppTime"] = dfLFHFElementDelta["AppTime"].apply(convertMillSecToSec)
+    # print(dfLFHFElement.columns)
+    # print(dfLFHFElement.head())
+    # print(dfLFHFElementDelta.columns)
+    # print(dfLFHFElementDelta.head())
+
+    SetSubPlotMarginFor2PlotsWithTime()
+    currentFigSize = list(plt.rcParams["figure.figsize"])
+    multiFigSize = [currentFigSize[0], currentFigSize[1] * 2]
+    fig, axes = plt.subplots(nrows=2, ncols=1, figsize=tuple(multiFigSize))
+    dfLFHFElement.plot(ax=axes[0],
+                       x="AppTime", y="LFHF(Element)",
+                       kind="line", title="LF/HF ratio by HTML elements (" + identifier + ")", legend=None, grid=True,
+                       xlabel="Time [s]", ylabel="LF/HF ratio for each HTML elements", colormap=Colormaps[0],
+                       style=["o-"])
+    dfLFHFElementDelta.plot(ax=axes[1],
+                            x="AppTime", y="LFHF(Element:Delta)",
+                            kind="line", title="LF/HF delta by HTML elements (" + identifier + ")", legend=None, grid=True,
+                            xlabel="Time [s]", ylabel="LF/HF delta for each HTML elements", colormap=Colormaps[1],
+                            style=["o-"])
+    plt.savefig(figurePath)
+    plt.close("all")
+    print("Saved " + figurePath)
+
 
 # Main Function
 def Main(identifierString, processedCsvPath, processedCsvEncoding, outputDir, outputFormat):
@@ -95,8 +149,12 @@ def Main(identifierString, processedCsvPath, processedCsvEncoding, outputDir, ou
     ProcessFixationTime(identifierString, dfFiltered, fixationTimeFigurePath)
 
     # LF/HF summary
-    lfhfFigurePath = outputDir + "/eta_lfhf_summary" + identifierString + "." + outputFormat
-    ProcessLFHFSummary(identifierString, dfFiltered, lfhfFigurePath)
+    lfhfSummaryFigurePath = outputDir + "/eta_lfhf_summary_" + identifierString + "." + outputFormat
+    ProcessLFHFSummary(identifierString, dfFiltered, lfhfSummaryFigurePath)
+
+    # LF/HF timeline
+    lfhfTimelineFigurePath = outputDir + "/eta_lfhf_timeline_" + identifierString + "." + outputFormat
+    ProcessLFHFTimeline(identifierString, dfFiltered, lfhfTimelineFigurePath)
 
 
 if __name__ == "__main__":
@@ -132,12 +190,6 @@ if __name__ == "__main__":
     # Set pyplot configs
     plt.rcParams["figure.figsize"] = args.output_size
     plt.rcParams["figure.dpi"] = args.output_dpi
-    plt.rcParams["figure.subplot.left"] = 0.08
-    plt.rcParams["figure.subplot.right"] = 0.95
-    plt.rcParams["figure.subplot.bottom"] = 0.15
-    plt.rcParams["figure.subplot.top"] = 0.95
-    plt.rcParams["figure.subplot.wspace"] = 0.15
-    plt.rcParams["figure.subplot.hspace"] = 0.6
     if args.output_grid_disable:
         plt.rcParams["grid.alpha"] = 0.0
     else:
