@@ -43,7 +43,7 @@ def SetSubPlotMarginFor2PlotsWithTime():
     plt.rcParams["figure.subplot.wspace"] = 0.0
     plt.rcParams["figure.subplot.hspace"] = 0.3
 
-def ProcessFixationTime(identifier, df, figurePath):
+def ProcessFixationTimeSummary(identifier, df, figurePath):
     #print(df.columns)
     dfPivotSum = pd.pivot_table(df, index="Category", values="TimeSpan", margins=False, aggfunc=np.sum)
     dfPivotSum = dfPivotSum.rename(columns={"TimeSpan": "Total fixation time"})
@@ -72,6 +72,13 @@ def ProcessFixationTime(identifier, df, figurePath):
     plt.savefig(figurePath)
     plt.close("all")
     print("Saved " + figurePath)
+
+def ProcessFixatedCategoryTimeSeries(identifier, df, figurePath):
+    #print(df.columns)
+    # > ["#", "Event", "Category", "AppTime", "X", "Y", "AriaLabel", "TimeSpan", "LFHF(Element)", "LFHF(Element:Delta)"]
+    dfFiltered = df.drop(["#", "Event", "X", "Y", "AriaLabel", "TimeSpan", "LFHF(Element)", "LFHF(Element:Delta)"], axis=1)
+    print(dfFiltered.columns)
+
 
 def ProcessLFHFSummary(identifier, df, figurePath):
     #print(df.columns)
@@ -103,20 +110,18 @@ def ProcessLFHFSummary(identifier, df, figurePath):
     plt.close("all")
     print("Saved " + figurePath)
 
-def ProcessLFHFTimeline(identifier, df, figurePath):
+def ProcessLFHFTimeSeries(identifier, df, figurePath):
     # print(df.columns)
-    # > ['#', 'Event', 'Category', 'AppTime', 'X', 'Y', 'AriaLabel', 'TimeSpan', 'LFHF(Element)', 'LFHF(Element:Delta)']
+    # > ["#", "Event", "Category", "AppTime", "X", "Y", "AriaLabel", "TimeSpan", "LFHF(Element)", "LFHF(Element:Delta)"]
     convertMillSecToSec = lambda t: round(t / 1000.0)
-    dfLFHFElement = df.drop(['#', 'Event', 'Category', 'X', 'Y', 'AriaLabel', 'TimeSpan', 'LFHF(Element:Delta)'], axis=1)
+    dfLFHFElement = df.drop(["#", "Event", "Category", "X", "Y", "AriaLabel", "TimeSpan", "LFHF(Element:Delta)"], axis=1)
     dfLFHFElement = dfLFHFElement.dropna(subset=["LFHF(Element)"])
     dfLFHFElement["AppTime"] = dfLFHFElement["AppTime"].apply(convertMillSecToSec)
-    dfLFHFElementDelta = df.drop(['#', 'Event', 'Category', 'X', 'Y', 'AriaLabel', 'TimeSpan', 'LFHF(Element)'], axis=1)
+    dfLFHFElementDelta = df.drop(["#", "Event", "Category", "X", "Y", "AriaLabel", "TimeSpan", "LFHF(Element)"], axis=1)
     dfLFHFElementDelta = dfLFHFElementDelta.dropna(subset=["LFHF(Element:Delta)"])
     dfLFHFElementDelta["AppTime"] = dfLFHFElementDelta["AppTime"].apply(convertMillSecToSec)
     # print(dfLFHFElement.columns)
-    # print(dfLFHFElement.head())
     # print(dfLFHFElementDelta.columns)
-    # print(dfLFHFElementDelta.head())
 
     SetSubPlotMarginFor2PlotsWithTime()
     currentFigSize = list(plt.rcParams["figure.figsize"])
@@ -144,17 +149,21 @@ def Main(identifierString, processedCsvPath, processedCsvEncoding, outputDir, ou
     df = CreateDataFrameFrom(processedCsvPath, processedCsvEncoding)
     dfFiltered = df.drop(["EventID", "ServerTime", "LFHF", "LFHF(Interpolated)"], axis=1)
 
-    # Fixation time
-    fixationTimeFigurePath = outputDir + "/eta_fixation_time_" + identifierString + "." + outputFormat
-    ProcessFixationTime(identifierString, dfFiltered, fixationTimeFigurePath)
+    # Fixation time summary
+    fixationTimeSummaryFigurePath = outputDir + "/eta_fixation_time_summary_" + identifierString + "." + outputFormat
+    ProcessFixationTimeSummary(identifierString, dfFiltered, fixationTimeSummaryFigurePath)
+
+    # Fixated category time series
+    fixatedCategoryTimeSeriesFigurePath = outputDir + "/eta_fixated_category_time_series_" + identifierString + "." + outputFormat
+    ProcessFixatedCategoryTimeSeries(identifierString, dfFiltered, fixatedCategoryTimeSeriesFigurePath)
 
     # LF/HF summary
     lfhfSummaryFigurePath = outputDir + "/eta_lfhf_summary_" + identifierString + "." + outputFormat
     ProcessLFHFSummary(identifierString, dfFiltered, lfhfSummaryFigurePath)
 
-    # LF/HF timeline
-    lfhfTimelineFigurePath = outputDir + "/eta_lfhf_timeline_" + identifierString + "." + outputFormat
-    ProcessLFHFTimeline(identifierString, dfFiltered, lfhfTimelineFigurePath)
+    # LF/HF time series
+    lfhfTimeSeriesFigurePath = outputDir + "/eta_lfhf_time_series_" + identifierString + "." + outputFormat
+    ProcessLFHFTimeSeries(identifierString, dfFiltered, lfhfTimeSeriesFigurePath)
 
 
 if __name__ == "__main__":
