@@ -46,7 +46,7 @@ def SetPlotMarginFor1PlotWithXTime():
 
 def SetPlotMarginFor1PlotWithXTimeYCategories():
     plt.rcParams["figure.subplot.left"] = 0.23
-    plt.rcParams["figure.subplot.right"] = 0.90
+    plt.rcParams["figure.subplot.right"] = 0.92
     plt.rcParams["figure.subplot.bottom"] = plt.rcParamsDefault["figure.subplot.bottom"]
     plt.rcParams["figure.subplot.top"] = 0.93
     plt.rcParams["figure.subplot.wspace"] = plt.rcParamsDefault["figure.subplot.wspace"]
