@@ -27,7 +27,23 @@ def CreateDataFrameFrom(csvPath, csvEncoding):
     dataFrame = pd.read_csv(csvPath, encoding=csvEncoding)
     return dataFrame
 
-def ProcessTimeSpan(df, figurePath):
+def SetSubPlotMarginFor4PlotsWithCategories():
+    plt.rcParams["figure.subplot.left"] = 0.08
+    plt.rcParams["figure.subplot.right"] = 0.95
+    plt.rcParams["figure.subplot.bottom"] = 0.15
+    plt.rcParams["figure.subplot.top"] = 0.95
+    plt.rcParams["figure.subplot.wspace"] = 0.15
+    plt.rcParams["figure.subplot.hspace"] = 0.6
+
+def SetSubPlotMarginFor2PlotsWithTime():
+    plt.rcParams["figure.subplot.left"] = 0.12
+    plt.rcParams["figure.subplot.right"] = 0.95
+    plt.rcParams["figure.subplot.bottom"] = 0.1
+    plt.rcParams["figure.subplot.top"] = 0.9
+    plt.rcParams["figure.subplot.wspace"] = 0.0
+    plt.rcParams["figure.subplot.hspace"] = 0.3
+
+def ProcessFixationTimeSummary(identifier, df, figurePath):
     #print(df.columns)
     dfPivotSum = pd.pivot_table(df, index="Category", values="TimeSpan", margins=False, aggfunc=np.sum)
     dfPivotSum = dfPivotSum.rename(columns={"TimeSpan": "Total fixation time"})
@@ -37,25 +53,34 @@ def ProcessTimeSpan(df, figurePath):
     dfPivotMean = dfPivotMean.rename(columns={"TimeSpan": "Mean fixation time"})
     dfPivotMeanSorted = dfPivotMean.sort_values("Mean fixation time", ascending=False)
 
+    SetSubPlotMarginFor4PlotsWithCategories()
     currentFigSize = list(plt.rcParams["figure.figsize"])
     multiFigSize = [currentFigSize[0] * 2, currentFigSize[1] * 2]
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
     dfPivotSum.plot(ax=axes[0, 0],
-                    kind="bar", title="Total fixation time by categories", legend=None, grid=True,
+                    kind="bar", title="Total fixation time by categories (" + identifier + ")", legend=None, grid=True,
                     xlabel="Category of html elements", ylabel="Total fixation time [ms]", colormap=Colormaps[0])
     dfPivotSumSorted.plot(ax=axes[1, 0],
-                          kind="bar", title="Total fixation time by categories (sorted)", legend=None, grid=True,
+                          kind="bar", title="Sorted total fixation time by categories (" + identifier + ")", legend=None, grid=True,
                           xlabel="Category of html elements", ylabel="Total fixation time [ms]", colormap=Colormaps[0])
     dfPivotMean.plot(ax=axes[0, 1],
-                     kind="bar", title="Mean fixation time by categories", legend=None, grid=True,
+                     kind="bar", title="Mean fixation time by categories (" + identifier + ")", legend=None, grid=True,
                      xlabel="Category of html elements", ylabel="Mean fixation time [ms]", colormap=Colormaps[1])
     dfPivotMeanSorted.plot(ax=axes[1, 1],
-                           kind="bar", title="Mean fixation time by categories (sorted)", legend=None, grid=True,
+                           kind="bar", title="Sorted mean fixation time by categories (" + identifier + ")", legend=None, grid=True,
                            xlabel="Category of html elements", ylabel="Mean fixation time [ms]", colormap=Colormaps[1])
     plt.savefig(figurePath)
     plt.close("all")
+    print("Saved " + figurePath)
 
-def ProcessLFHF(df, figurePath):
+def ProcessFixatedCategoryTimeSeries(identifier, df, figurePath):
+    #print(df.columns)
+    # > ["#", "Event", "Category", "AppTime", "X", "Y", "AriaLabel", "TimeSpan", "LFHF(Element)", "LFHF(Element:Delta)"]
+    dfFiltered = df.drop(["#", "Event", "X", "Y", "AriaLabel", "TimeSpan", "LFHF(Element)", "LFHF(Element:Delta)"], axis=1)
+    print(dfFiltered.columns)
+
+
+def ProcessLFHFSummary(identifier, df, figurePath):
     #print(df.columns)
     dfPivotDeltaSum = pd.pivot_table(df, index="Category", values="LFHF(Element:Delta)", margins=False, aggfunc=np.sum)
     dfPivotDeltaSum = dfPivotDeltaSum.rename(columns={"LFHF(Element:Delta)": "Total LF/HF Delta"})
@@ -65,23 +90,57 @@ def ProcessLFHF(df, figurePath):
     dfPivotMean = dfPivotMean.rename(columns={"LFHF(Element)": "Mean LF/HF"})
     dfPivotMeanSorted = dfPivotMean.sort_values("Mean LF/HF", ascending=False)
 
+    SetSubPlotMarginFor4PlotsWithCategories()
     currentFigSize = list(plt.rcParams["figure.figsize"])
     multiFigSize = [currentFigSize[0] * 2, currentFigSize[1] * 2]
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
     dfPivotDeltaSum.plot(ax=axes[0, 0],
-                         kind="bar", title="Total LF/HF delta by categories", legend=None, grid=True,
+                         kind="bar", title="Total LF/HF delta by categories (" + identifier + ")", legend=None, grid=True,
                          xlabel="Category of html elements", ylabel="Total LF/HF delta", colormap=Colormaps[0])
     dfPivotDeltaSumSorted.plot(ax=axes[1, 0],
-                               kind="bar", title="Total LF/HF delta by categories (sorted)", legend=None, grid=True,
+                               kind="bar", title="Sorted total LF/HF delta by categories (" + identifier + ")", legend=None, grid=True,
                                xlabel="Category of html elements", ylabel="Total LF/HF delta", colormap=Colormaps[0])
     dfPivotMean.plot(ax=axes[0, 1],
-                     kind="bar", title="Mean LF/HF by categories", legend=None, grid=True,
+                     kind="bar", title="Mean LF/HF by categories (" + identifier + ")", legend=None, grid=True,
                      xlabel="Category of html elements", ylabel="Mean LF/HF", colormap=Colormaps[1])
     dfPivotMeanSorted.plot(ax=axes[1, 1],
-                           kind="bar", title="Mean LF/HF by categories (sorted)", legend=None, grid=True,
+                           kind="bar", title="Sorted mean LF/HF by categories (" + identifier + ")", legend=None, grid=True,
                            xlabel="Category of html elements", ylabel="Mean LF/HF", colormap=Colormaps[1])
     plt.savefig(figurePath)
     plt.close("all")
+    print("Saved " + figurePath)
+
+def ProcessLFHFTimeSeries(identifier, df, figurePath):
+    # print(df.columns)
+    # > ["#", "Event", "Category", "AppTime", "X", "Y", "AriaLabel", "TimeSpan", "LFHF(Element)", "LFHF(Element:Delta)"]
+    convertMillSecToSec = lambda t: round(t / 1000.0)
+    dfLFHFElement = df.drop(["#", "Event", "Category", "X", "Y", "AriaLabel", "TimeSpan", "LFHF(Element:Delta)"], axis=1)
+    dfLFHFElement = dfLFHFElement.dropna(subset=["LFHF(Element)"])
+    dfLFHFElement["AppTime"] = dfLFHFElement["AppTime"].apply(convertMillSecToSec)
+    dfLFHFElementDelta = df.drop(["#", "Event", "Category", "X", "Y", "AriaLabel", "TimeSpan", "LFHF(Element)"], axis=1)
+    dfLFHFElementDelta = dfLFHFElementDelta.dropna(subset=["LFHF(Element:Delta)"])
+    dfLFHFElementDelta["AppTime"] = dfLFHFElementDelta["AppTime"].apply(convertMillSecToSec)
+    # print(dfLFHFElement.columns)
+    # print(dfLFHFElementDelta.columns)
+
+    SetSubPlotMarginFor2PlotsWithTime()
+    currentFigSize = list(plt.rcParams["figure.figsize"])
+    multiFigSize = [currentFigSize[0], currentFigSize[1] * 2]
+    fig, axes = plt.subplots(nrows=2, ncols=1, figsize=tuple(multiFigSize))
+    dfLFHFElement.plot(ax=axes[0],
+                       x="AppTime", y="LFHF(Element)",
+                       kind="line", title="LF/HF ratio by HTML elements (" + identifier + ")", legend=None, grid=True,
+                       xlabel="Time [s]", ylabel="LF/HF ratio for each HTML elements", colormap=Colormaps[0],
+                       style=["o-"])
+    dfLFHFElementDelta.plot(ax=axes[1],
+                            x="AppTime", y="LFHF(Element:Delta)",
+                            kind="line", title="LF/HF delta by HTML elements (" + identifier + ")", legend=None, grid=True,
+                            xlabel="Time [s]", ylabel="LF/HF delta for each HTML elements", colormap=Colormaps[1],
+                            style=["o-"])
+    plt.savefig(figurePath)
+    plt.close("all")
+    print("Saved " + figurePath)
+
 
 # Main Function
 def Main(identifierString, processedCsvPath, processedCsvEncoding, outputDir, outputFormat):
@@ -90,13 +149,21 @@ def Main(identifierString, processedCsvPath, processedCsvEncoding, outputDir, ou
     df = CreateDataFrameFrom(processedCsvPath, processedCsvEncoding)
     dfFiltered = df.drop(["EventID", "ServerTime", "LFHF", "LFHF(Interpolated)"], axis=1)
 
-    # Time span
-    timeSpanFigurePath = outputDir + "/eta_timespan_" + identifierString + "." + outputFormat
-    ProcessTimeSpan(dfFiltered, timeSpanFigurePath)
+    # Fixation time summary
+    fixationTimeSummaryFigurePath = outputDir + "/eta_fixation_time_summary_" + identifierString + "." + outputFormat
+    ProcessFixationTimeSummary(identifierString, dfFiltered, fixationTimeSummaryFigurePath)
 
-    # LF/HF
-    lfhfFigurePath = outputDir + "/eta_lfhf_" + identifierString + "." + outputFormat
-    ProcessLFHF(dfFiltered, lfhfFigurePath)
+    # Fixated category time series
+    fixatedCategoryTimeSeriesFigurePath = outputDir + "/eta_fixated_category_time_series_" + identifierString + "." + outputFormat
+    ProcessFixatedCategoryTimeSeries(identifierString, dfFiltered, fixatedCategoryTimeSeriesFigurePath)
+
+    # LF/HF summary
+    lfhfSummaryFigurePath = outputDir + "/eta_lfhf_summary_" + identifierString + "." + outputFormat
+    ProcessLFHFSummary(identifierString, dfFiltered, lfhfSummaryFigurePath)
+
+    # LF/HF time series
+    lfhfTimeSeriesFigurePath = outputDir + "/eta_lfhf_time_series_" + identifierString + "." + outputFormat
+    ProcessLFHFTimeSeries(identifierString, dfFiltered, lfhfTimeSeriesFigurePath)
 
 
 if __name__ == "__main__":
@@ -132,12 +199,6 @@ if __name__ == "__main__":
     # Set pyplot configs
     plt.rcParams["figure.figsize"] = args.output_size
     plt.rcParams["figure.dpi"] = args.output_dpi
-    plt.rcParams["figure.subplot.left"] = 0.08
-    plt.rcParams["figure.subplot.right"] = 0.95
-    plt.rcParams["figure.subplot.bottom"] = 0.15
-    plt.rcParams["figure.subplot.top"] = 0.95
-    plt.rcParams["figure.subplot.wspace"] = 0.15
-    plt.rcParams["figure.subplot.hspace"] = 0.6
     if args.output_grid_disable:
         plt.rcParams["grid.alpha"] = 0.0
     else:
