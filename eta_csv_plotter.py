@@ -16,6 +16,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import seaborn as sns
 
 # Configs
 
@@ -27,7 +28,7 @@ def CreateDataFrameFrom(csvPath, csvEncoding):
     dataFrame = pd.read_csv(csvPath, encoding=csvEncoding)
     return dataFrame
 
-def SetSubPlotMarginFor4PlotsWithCategories():
+def SetPlotMarginFor4PlotsWithXCategories():
     plt.rcParams["figure.subplot.left"] = 0.08
     plt.rcParams["figure.subplot.right"] = 0.95
     plt.rcParams["figure.subplot.bottom"] = 0.15
@@ -35,13 +36,22 @@ def SetSubPlotMarginFor4PlotsWithCategories():
     plt.rcParams["figure.subplot.wspace"] = 0.15
     plt.rcParams["figure.subplot.hspace"] = 0.6
 
-def SetSubPlotMarginFor2PlotsWithTime():
-    plt.rcParams["figure.subplot.left"] = 0.12
+def SetPlotMarginFor1PlotWithXTime():
+    plt.rcParams["figure.subplot.left"] = 0.10
     plt.rcParams["figure.subplot.right"] = 0.95
-    plt.rcParams["figure.subplot.bottom"] = 0.1
-    plt.rcParams["figure.subplot.top"] = 0.9
-    plt.rcParams["figure.subplot.wspace"] = 0.0
-    plt.rcParams["figure.subplot.hspace"] = 0.3
+    plt.rcParams["figure.subplot.bottom"] = plt.rcParamsDefault["figure.subplot.bottom"]
+    plt.rcParams["figure.subplot.top"] = 0.93
+    plt.rcParams["figure.subplot.wspace"] = plt.rcParamsDefault["figure.subplot.wspace"]
+    plt.rcParams["figure.subplot.hspace"] = plt.rcParamsDefault["figure.subplot.hspace"]
+
+def SetPlotMarginFor1PlotWithXTimeYCategories():
+    plt.rcParams["figure.subplot.left"] = 0.22
+    plt.rcParams["figure.subplot.right"] = 0.90
+    plt.rcParams["figure.subplot.bottom"] = plt.rcParamsDefault["figure.subplot.bottom"]
+    plt.rcParams["figure.subplot.top"] = 0.93
+    plt.rcParams["figure.subplot.wspace"] = plt.rcParamsDefault["figure.subplot.wspace"]
+    plt.rcParams["figure.subplot.hspace"] = plt.rcParamsDefault["figure.subplot.hspace"]
+
 
 def ProcessFixationTimeSummary(identifier, df, figurePath):
     #print(df.columns)
@@ -53,31 +63,61 @@ def ProcessFixationTimeSummary(identifier, df, figurePath):
     dfPivotMean = dfPivotMean.rename(columns={"TimeSpan": "Mean fixation time"})
     dfPivotMeanSorted = dfPivotMean.sort_values("Mean fixation time", ascending=False)
 
-    SetSubPlotMarginFor4PlotsWithCategories()
+    SetPlotMarginFor4PlotsWithXCategories()
     currentFigSize = list(plt.rcParams["figure.figsize"])
     multiFigSize = [currentFigSize[0] * 2, currentFigSize[1] * 2]
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
     dfPivotSum.plot(ax=axes[0, 0],
                     kind="bar", title="Total fixation time by categories (" + identifier + ")", legend=None, grid=True,
-                    xlabel="Category of html elements", ylabel="Total fixation time [ms]", colormap=Colormaps[0])
+                    xlabel="Category of HTML elements", ylabel="Total fixation time [ms]", colormap=Colormaps[0])
     dfPivotSumSorted.plot(ax=axes[1, 0],
                           kind="bar", title="Sorted total fixation time by categories (" + identifier + ")", legend=None, grid=True,
-                          xlabel="Category of html elements", ylabel="Total fixation time [ms]", colormap=Colormaps[0])
+                          xlabel="Category of HTML elements", ylabel="Total fixation time [ms]", colormap=Colormaps[0])
     dfPivotMean.plot(ax=axes[0, 1],
                      kind="bar", title="Mean fixation time by categories (" + identifier + ")", legend=None, grid=True,
-                     xlabel="Category of html elements", ylabel="Mean fixation time [ms]", colormap=Colormaps[1])
+                     xlabel="Category of HTML elements", ylabel="Mean fixation time [ms]", colormap=Colormaps[1])
     dfPivotMeanSorted.plot(ax=axes[1, 1],
                            kind="bar", title="Sorted mean fixation time by categories (" + identifier + ")", legend=None, grid=True,
-                           xlabel="Category of html elements", ylabel="Mean fixation time [ms]", colormap=Colormaps[1])
+                           xlabel="Category of HTML elements", ylabel="Mean fixation time [ms]", colormap=Colormaps[1])
     plt.savefig(figurePath)
     plt.close("all")
-    print("Saved " + figurePath)
+    print("Successfully saved " + figurePath)
 
-def ProcessFixatedCategoryTimeSeries(identifier, df, figurePath):
+def CreateDataFrameForCategorizedPlotFrom(df):
     #print(df.columns)
     # > ["#", "Event", "Category", "AppTime", "X", "Y", "AriaLabel", "TimeSpan", "LFHF(Element)", "LFHF(Element:Delta)"]
     dfFiltered = df.drop(["#", "Event", "X", "Y", "AriaLabel", "TimeSpan", "LFHF(Element)", "LFHF(Element:Delta)"], axis=1)
-    print(dfFiltered.columns)
+    #print(dfFiltered.columns)
+    # > ["Category", "AppTime"]
+
+    dfIndexed = dfFiltered.set_index("AppTime", drop=True)
+    dfIndexed = dfIndexed[~dfIndexed.index.duplicated(keep="first")]
+    #print(dfIndexed.head())
+
+    dfFilled = dfIndexed.reindex(index=range(dfIndexed.index.to_series().min(),
+                                             dfIndexed.index.to_series().max(),
+                                             1000),
+                                 method="ffill")
+
+    convertMillSecToSec = lambda t: round(t / 1000.0)
+    dfFilled["AppTimeSec"] = dfFilled.index.to_series().apply(convertMillSecToSec)
+    #print(dfFilled.head())
+
+    return dfFilled
+
+def ProcessFixatedCategoryTimeSeries(identifier, df, figurePath):
+    dfForCategories = CreateDataFrameForCategorizedPlotFrom(df)
+
+    SetPlotMarginFor1PlotWithXTimeYCategories()
+    plt.title("Fixated categories (" + identifier + ")")
+    sp = sns.stripplot(data=dfForCategories, x=dfForCategories["AppTimeSec"], y=dfForCategories["Category"],
+                       order=sorted(dfForCategories["Category"].unique().tolist()),
+                       size=3, jitter=0.0, palette=sns.color_palette("bright"))
+    sp.set(xlabel="Time [s]",
+           ylabel="Category of HTML elements")
+    plt.savefig(figurePath)
+    plt.close("all")
+    print("Successfully saved " + figurePath)
 
 
 def ProcessLFHFSummary(identifier, df, figurePath):
@@ -90,56 +130,69 @@ def ProcessLFHFSummary(identifier, df, figurePath):
     dfPivotMean = dfPivotMean.rename(columns={"LFHF(Element)": "Mean LF/HF"})
     dfPivotMeanSorted = dfPivotMean.sort_values("Mean LF/HF", ascending=False)
 
-    SetSubPlotMarginFor4PlotsWithCategories()
+    SetPlotMarginFor4PlotsWithXCategories()
     currentFigSize = list(plt.rcParams["figure.figsize"])
     multiFigSize = [currentFigSize[0] * 2, currentFigSize[1] * 2]
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
     dfPivotDeltaSum.plot(ax=axes[0, 0],
                          kind="bar", title="Total LF/HF delta by categories (" + identifier + ")", legend=None, grid=True,
-                         xlabel="Category of html elements", ylabel="Total LF/HF delta", colormap=Colormaps[0])
+                         xlabel="Category of HTML elements", ylabel="Total LF/HF delta", colormap=Colormaps[0])
     dfPivotDeltaSumSorted.plot(ax=axes[1, 0],
                                kind="bar", title="Sorted total LF/HF delta by categories (" + identifier + ")", legend=None, grid=True,
-                               xlabel="Category of html elements", ylabel="Total LF/HF delta", colormap=Colormaps[0])
+                               xlabel="Category of HTML elements", ylabel="Total LF/HF delta", colormap=Colormaps[0])
     dfPivotMean.plot(ax=axes[0, 1],
                      kind="bar", title="Mean LF/HF by categories (" + identifier + ")", legend=None, grid=True,
-                     xlabel="Category of html elements", ylabel="Mean LF/HF", colormap=Colormaps[1])
+                     xlabel="Category of HTML elements", ylabel="Mean LF/HF", colormap=Colormaps[1])
     dfPivotMeanSorted.plot(ax=axes[1, 1],
                            kind="bar", title="Sorted mean LF/HF by categories (" + identifier + ")", legend=None, grid=True,
-                           xlabel="Category of html elements", ylabel="Mean LF/HF", colormap=Colormaps[1])
+                           xlabel="Category of HTML elements", ylabel="Mean LF/HF", colormap=Colormaps[1])
     plt.savefig(figurePath)
     plt.close("all")
-    print("Saved " + figurePath)
+    print("Successfully saved " + figurePath)
 
-def ProcessLFHFTimeSeries(identifier, df, figurePath):
+def CreateDataFrameForLFHFPlotFrom(df):
     # print(df.columns)
     # > ["#", "Event", "Category", "AppTime", "X", "Y", "AriaLabel", "TimeSpan", "LFHF(Element)", "LFHF(Element:Delta)"]
     convertMillSecToSec = lambda t: round(t / 1000.0)
     dfLFHFElement = df.drop(["#", "Event", "Category", "X", "Y", "AriaLabel", "TimeSpan", "LFHF(Element:Delta)"], axis=1)
     dfLFHFElement = dfLFHFElement.dropna(subset=["LFHF(Element)"])
     dfLFHFElement["AppTime"] = dfLFHFElement["AppTime"].apply(convertMillSecToSec)
-    dfLFHFElementDelta = df.drop(["#", "Event", "Category", "X", "Y", "AriaLabel", "TimeSpan", "LFHF(Element)"], axis=1)
-    dfLFHFElementDelta = dfLFHFElementDelta.dropna(subset=["LFHF(Element:Delta)"])
-    dfLFHFElementDelta["AppTime"] = dfLFHFElementDelta["AppTime"].apply(convertMillSecToSec)
-    # print(dfLFHFElement.columns)
-    # print(dfLFHFElementDelta.columns)
 
-    SetSubPlotMarginFor2PlotsWithTime()
-    currentFigSize = list(plt.rcParams["figure.figsize"])
-    multiFigSize = [currentFigSize[0], currentFigSize[1] * 2]
-    fig, axes = plt.subplots(nrows=2, ncols=1, figsize=tuple(multiFigSize))
-    dfLFHFElement.plot(ax=axes[0],
-                       x="AppTime", y="LFHF(Element)",
-                       kind="line", title="LF/HF ratio by HTML elements (" + identifier + ")", legend=None, grid=True,
-                       xlabel="Time [s]", ylabel="LF/HF ratio for each HTML elements", colormap=Colormaps[0],
-                       style=["o-"])
-    dfLFHFElementDelta.plot(ax=axes[1],
-                            x="AppTime", y="LFHF(Element:Delta)",
-                            kind="line", title="LF/HF delta by HTML elements (" + identifier + ")", legend=None, grid=True,
-                            xlabel="Time [s]", ylabel="LF/HF delta for each HTML elements", colormap=Colormaps[1],
-                            style=["o-"])
+    return dfLFHFElement
+
+def ProcessLFHFTimeSeries(identifier, df, figurePath):
+    dfForLFHF = CreateDataFrameForLFHFPlotFrom(df)
+
+    SetPlotMarginFor1PlotWithXTime()
+    dfForLFHF.plot(x="AppTime", y="LFHF(Element)",
+                   kind="line", title="LF/HF ratio (" + identifier + ")", legend=None, grid=True,
+                   xlabel="Time [s]", ylabel="LF/HF ratio for each HTML elements", colormap=Colormaps[0],
+                   style=["o-"], ms=3)
     plt.savefig(figurePath)
     plt.close("all")
-    print("Saved " + figurePath)
+    print("Successfully saved " + figurePath)
+
+def ProcessFixatedCategoryAndLFHFTimeSeries(identifier, df, figurePath):
+    dfForLFHF = CreateDataFrameForLFHFPlotFrom(df)
+    dfForCategories = CreateDataFrameForCategorizedPlotFrom(df)
+
+    SetPlotMarginFor1PlotWithXTimeYCategories()
+    fig, axBase = plt.subplots()
+    axAlt = axBase.twinx()
+    dfForLFHF.plot(ax=axAlt,
+                   x="AppTime", y="LFHF(Element)",
+                   kind="line", title="Fixated categories and LF/HF ratio (" + identifier + ")", legend=None, grid=True,
+                   xlabel="Time [s]", ylabel="LF/HF ratio for each HTML elements", colormap=Colormaps[1],
+                   style=["o-"], ms=3)
+    sp = sns.stripplot(ax=axBase,
+                       data=dfForCategories, x=dfForCategories["AppTimeSec"], y=dfForCategories["Category"],
+                       order=sorted(dfForCategories["Category"].unique().tolist()),
+                       size=3, jitter=0.0, palette=sns.color_palette("bright"))
+    sp.set(xlabel="Time [s]",
+           ylabel="Category of HTML elements")
+    plt.savefig(figurePath)
+    plt.close("all")
+    print("Successfully saved " + figurePath)
 
 
 # Main Function
@@ -164,6 +217,10 @@ def Main(identifierString, processedCsvPath, processedCsvEncoding, outputDir, ou
     # LF/HF time series
     lfhfTimeSeriesFigurePath = outputDir + "/eta_lfhf_time_series_" + identifierString + "." + outputFormat
     ProcessLFHFTimeSeries(identifierString, dfFiltered, lfhfTimeSeriesFigurePath)
+
+    # Fixated category and LF/HF time series
+    fixatedCategoryTimeAndLFHFSeriesFigurePath = outputDir + "/eta_fixated_category_and_lfhf_time_series_" + identifierString + "." + outputFormat
+    ProcessFixatedCategoryAndLFHFTimeSeries(identifierString, dfFiltered, fixatedCategoryTimeAndLFHFSeriesFigurePath)
 
 
 if __name__ == "__main__":
