@@ -21,7 +21,7 @@ import seaborn as sns
 # Configs
 
 # Global Variables
-Colormaps = ["Pastel1", "Pastel2"]
+Colormaps = ["plasma", "viridis"]
 
 # Functions
 def CreateDataFrameFrom(csvPath, csvEncoding):
@@ -46,7 +46,7 @@ def SetPlotMarginFor1PlotWithXTime():
 
 def SetPlotMarginFor1PlotWithXTimeYCategories():
     plt.rcParams["figure.subplot.left"] = 0.23
-    plt.rcParams["figure.subplot.right"] = 0.92
+    plt.rcParams["figure.subplot.right"] = 0.90
     plt.rcParams["figure.subplot.bottom"] = plt.rcParamsDefault["figure.subplot.bottom"]
     plt.rcParams["figure.subplot.top"] = 0.93
     plt.rcParams["figure.subplot.wspace"] = plt.rcParamsDefault["figure.subplot.wspace"]
@@ -112,13 +112,12 @@ def ProcessFixatedCategoryTimeSeries(identifier, df, figurePath):
     plt.title("Fixated categories (" + identifier + ")")
     sp = sns.stripplot(data=dfForCategories, x=dfForCategories["AppTimeSec"], y=dfForCategories["Category"],
                        order=sorted(dfForCategories["Category"].unique().tolist()),
-                       size=3, jitter=0.0, palette=sns.color_palette("bright"))
+                       size=3, jitter=0.0, palette=sns.color_palette("bright"), rasterized=True)
     sp.set(xlabel="Time [s]",
            ylabel="Category of HTML elements")
     plt.savefig(figurePath)
     plt.close("all")
     print("Successfully saved: " + figurePath)
-
 
 def ProcessLFHFSummary(identifier, df, figurePath):
     #print(df.columns)
@@ -163,11 +162,14 @@ def CreateDataFrameForLFHFPlotFrom(df):
 def ProcessLFHFTimeSeries(identifier, df, figurePath):
     dfForLFHF = CreateDataFrameForLFHFPlotFrom(df)
 
+    plt.gca().get_yaxis().get_major_formatter().set_useOffset(False)
+    #plt.gca().get_yaxis().set_major_locator(mpl.ticker.MaxNLocator(integer=True))
+    plt.gca().get_yaxis().set_major_formatter(mpl.ticker.FormatStrFormatter("%.1f"))
     SetPlotMarginFor1PlotWithXTime()
     dfForLFHF.plot(x="AppTime", y="LFHF(Element)",
                    kind="line", title="LF/HF ratio (" + identifier + ")", legend=None, grid=True,
                    xlabel="Time [s]", ylabel="LF/HF ratio for each HTML elements", colormap=Colormaps[0],
-                   style=["o-"], ms=3)
+                   style=["o-"], ms=3, lw=1)
     plt.savefig(figurePath)
     plt.close("all")
     print("Successfully saved: " + figurePath)
@@ -179,15 +181,18 @@ def ProcessFixatedCategoryAndLFHFTimeSeries(identifier, df, figurePath):
     SetPlotMarginFor1PlotWithXTimeYCategories()
     fig, axBase = plt.subplots()
     axAlt = axBase.twinx()
+    axAlt.get_yaxis().get_major_formatter().set_useOffset(False)
+    #axAlt.get_yaxis().set_major_locator(mpl.ticker.MaxNLocator(integer=True))
+    axAlt.get_yaxis().set_major_formatter(mpl.ticker.FormatStrFormatter("%.1f"))
     dfForLFHF.plot(ax=axAlt,
                    x="AppTime", y="LFHF(Element)",
                    kind="line", title="Fixated categories and LF/HF ratio (" + identifier + ")", legend=None, grid=True,
-                   xlabel="Time [s]", ylabel="LF/HF ratio for each HTML elements", colormap=Colormaps[1],
-                   style=["o-"], ms=3)
+                   xlabel="Time [s]", ylabel="LF/HF ratio for each HTML elements", colormap=Colormaps[0],
+                   style=["x-"], ms=3, lw=1, alpha=0.33)
     sp = sns.stripplot(ax=axBase,
                        data=dfForCategories, x=dfForCategories["AppTimeSec"], y=dfForCategories["Category"],
                        order=sorted(dfForCategories["Category"].unique().tolist()),
-                       size=3, jitter=0.0, palette=sns.color_palette("bright"))
+                       size=3, jitter=0.0, palette=sns.color_palette("bright"), rasterized=True)
     sp.set(xlabel="Time [s]",
            ylabel="Category of HTML elements")
     plt.savefig(figurePath)
