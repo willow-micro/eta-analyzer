@@ -69,16 +69,16 @@ def ProcessFixationTimeSummary(identifier, df, figurePath):
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
     dfPivotSum.plot(ax=axes[0, 0],
                     kind="bar", title="Total fixation time by categories (" + identifier + ")", legend=None, grid=True,
-                    xlabel="Category of HTML elements", ylabel="Total fixation time [ms]", colormap=Colormaps[0])
+                    xlabel="Category of elements in HTML", ylabel="Total fixation time [ms]", colormap=Colormaps[0])
     dfPivotSumSorted.plot(ax=axes[1, 0],
                           kind="bar", title="Sorted total fixation time by categories (" + identifier + ")", legend=None, grid=True,
-                          xlabel="Category of HTML elements", ylabel="Total fixation time [ms]", colormap=Colormaps[0])
+                          xlabel="Category of elements in HTML", ylabel="Total fixation time [ms]", colormap=Colormaps[0])
     dfPivotMean.plot(ax=axes[0, 1],
                      kind="bar", title="Mean fixation time by categories (" + identifier + ")", legend=None, grid=True,
-                     xlabel="Category of HTML elements", ylabel="Mean fixation time [ms]", colormap=Colormaps[1])
+                     xlabel="Category of elements in HTML", ylabel="Mean fixation time [ms]", colormap=Colormaps[1])
     dfPivotMeanSorted.plot(ax=axes[1, 1],
                            kind="bar", title="Sorted mean fixation time by categories (" + identifier + ")", legend=None, grid=True,
-                           xlabel="Category of HTML elements", ylabel="Mean fixation time [ms]", colormap=Colormaps[1])
+                           xlabel="Category of elements in HTML", ylabel="Mean fixation time [ms]", colormap=Colormaps[1])
     plt.savefig(figurePath)
     plt.close("all")
     print("Successfully saved: " + figurePath)
@@ -112,9 +112,9 @@ def ProcessFixatedCategoryTimeSeries(identifier, df, figurePath):
     plt.title("Fixated categories (" + identifier + ")")
     sp = sns.stripplot(data=dfForCategories, x=dfForCategories["AppTimeSec"], y=dfForCategories["Category"],
                        order=sorted(dfForCategories["Category"].unique().tolist()),
-                       size=3, jitter=0.0, palette=sns.color_palette("bright"), rasterized=True)
+                       marker="s", size=2.5, jitter=0.0, palette=sns.color_palette("bright"), rasterized=True)
     sp.set(xlabel="Time [s]",
-           ylabel="Category of HTML elements")
+           ylabel="Category of elements in HTML")
     plt.savefig(figurePath)
     plt.close("all")
     print("Successfully saved: " + figurePath)
@@ -135,16 +135,16 @@ def ProcessLFHFSummary(identifier, df, figurePath):
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
     dfPivotDeltaSum.plot(ax=axes[0, 0],
                          kind="bar", title="Total LF/HF delta by categories (" + identifier + ")", legend=None, grid=True,
-                         xlabel="Category of HTML elements", ylabel="Total LF/HF delta", colormap=Colormaps[0])
+                         xlabel="Category of elements in HTML", ylabel="Total LF/HF delta", colormap=Colormaps[0])
     dfPivotDeltaSumSorted.plot(ax=axes[1, 0],
                                kind="bar", title="Sorted total LF/HF delta by categories (" + identifier + ")", legend=None, grid=True,
-                               xlabel="Category of HTML elements", ylabel="Total LF/HF delta", colormap=Colormaps[0])
+                               xlabel="Category of elements in HTML", ylabel="Total LF/HF delta", colormap=Colormaps[0])
     dfPivotMean.plot(ax=axes[0, 1],
                      kind="bar", title="Mean LF/HF by categories (" + identifier + ")", legend=None, grid=True,
-                     xlabel="Category of HTML elements", ylabel="Mean LF/HF", colormap=Colormaps[1])
+                     xlabel="Category of elements in HTML", ylabel="Mean LF/HF", colormap=Colormaps[1])
     dfPivotMeanSorted.plot(ax=axes[1, 1],
                            kind="bar", title="Sorted mean LF/HF by categories (" + identifier + ")", legend=None, grid=True,
-                           xlabel="Category of HTML elements", ylabel="Mean LF/HF", colormap=Colormaps[1])
+                           xlabel="Category of elements in HTML", ylabel="Mean LF/HF", colormap=Colormaps[1])
     plt.savefig(figurePath)
     plt.close("all")
     print("Successfully saved: " + figurePath)
@@ -168,7 +168,7 @@ def ProcessLFHFTimeSeries(identifier, df, figurePath):
     SetPlotMarginFor1PlotWithXTime()
     dfForLFHF.plot(x="AppTime", y="LFHF(Element)",
                    kind="line", title="LF/HF ratio (" + identifier + ")", legend=None, grid=True,
-                   xlabel="Time [s]", ylabel="LF/HF ratio for each HTML elements", colormap=Colormaps[0],
+                   xlabel="Time [s]", ylabel="LF/HF ratio for each element in HTML", colormap=Colormaps[0],
                    style=["o-"], ms=3, lw=1)
     plt.savefig(figurePath)
     plt.close("all")
@@ -187,14 +187,14 @@ def ProcessFixatedCategoryAndLFHFTimeSeries(identifier, df, figurePath):
     dfForLFHF.plot(ax=axAlt,
                    x="AppTime", y="LFHF(Element)",
                    kind="line", title="Fixated categories and LF/HF ratio (" + identifier + ")", legend=None, grid=True,
-                   xlabel="Time [s]", ylabel="LF/HF ratio for each HTML elements", colormap=Colormaps[0],
-                   style=["x-"], ms=3, lw=1, alpha=0.33)
+                   xlabel="Time [s]", ylabel="LF/HF ratio for each element in HTML", colormap=Colormaps[0],
+                   style=["x-"], ms=3.5, lw=1, alpha=0.33)
     sp = sns.stripplot(ax=axBase,
                        data=dfForCategories, x=dfForCategories["AppTimeSec"], y=dfForCategories["Category"],
                        order=sorted(dfForCategories["Category"].unique().tolist()),
-                       size=3, jitter=0.0, palette=sns.color_palette("bright"), rasterized=True)
+                       marker="s", size=2.5, jitter=0.0, palette=sns.color_palette("bright"), rasterized=True)
     sp.set(xlabel="Time [s]",
-           ylabel="Category of HTML elements")
+           ylabel="Category of elements in HTML")
     plt.savefig(figurePath)
     plt.close("all")
     print("Successfully saved: " + figurePath)
