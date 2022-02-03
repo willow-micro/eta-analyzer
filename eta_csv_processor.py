@@ -82,7 +82,6 @@ def ProcessRowStringsFromRawCsv(rowStrings, filteredCsv):
 
 def FilterRows(rawCsvPath, rawCsvEncoding,
                filteredCsvPath, filteredCsvEncoding):
-    print("Start to filter rows from: " + rawCsvPath)
     with open(rawCsvPath, mode="r", encoding=rawCsvEncoding) as originalCsv:
         with open(filteredCsvPath, mode="w", encoding=filteredCsvEncoding) as filteredCsv:
             # Set colmuns to read from original csv
@@ -101,7 +100,7 @@ def FilterRows(rawCsvPath, rawCsvEncoding,
             # Process rows
             rowStrings = originalCsv.readlines()
             ProcessRowStringsFromRawCsv(rowStrings, filteredCsv)
-    print("Saved: " + filteredCsvPath)
+    print("Successfully saved: " + filteredCsvPath)
 
 ## Categorize filtered csv
 ## Filtered Csv -> Categorized csv
@@ -139,14 +138,13 @@ def ProcessRowStringsFromFilteredCsv(filteredCsvColumns, rowStrings, categorized
 def Categorize(filteredCsvPath, filteredCsvEncoding, filteredCsvColumns,
                categorizedCsvPath, categorizedCsvEncoding,
                AriaLabelCategories):
-    print("Start to categorize from: " + filteredCsvPath)
     with open(filteredCsvPath, mode="r", encoding=filteredCsvEncoding) as filteredCsv:
         with open(categorizedCsvPath, mode="w", encoding=categorizedCsvEncoding) as categorizedCsv:
             headers = filteredCsv.readline().strip()
             categorizedCsv.write("#,Event,Category," + headers + ",TimeSpan\n")
             rowStrings = filteredCsv.readlines()
             ProcessRowStringsFromFilteredCsv(filteredCsvColumns, rowStrings, categorizedCsv, AriaLabelCategories)
-    print("Saved: " + categorizedCsvPath)
+    print("Successfully saved: " + categorizedCsvPath)
 
 
 ## Interpolate LF/HF values
@@ -195,14 +193,13 @@ def ProcessRowStringsFromCategorizedCsv(categorizedCsvColumns, rowStrings, inter
 def InterpolateLFHF(categorizedCsvPath, categorizedCsvEncoding, categorizedCsvColumns,
                     interpolatedCsvPath, interpolatedCsvEncoding,
                     writeLFHFComputedRows):
-    print("Start to interpolate LF/HF from:" + categorizedCsvPath)
     with open(categorizedCsvPath, mode="r", encoding=categorizedCsvEncoding) as categorizedCsv:
         with open(interpolatedCsvPath, mode="w", encoding=interpolatedCsvEncoding) as interpolatedCsv:
             headers = categorizedCsv.readline().strip()
             interpolatedCsv.write(headers + ",LFHF(Interpolated)\n")
             rowStrings = categorizedCsv.readlines()
             ProcessRowStringsFromCategorizedCsv(categorizedCsvColumns, rowStrings, interpolatedCsv, writeLFHFComputedRows)
-    print("Saved: " + interpolatedCsvPath)
+    print("Successfully saved: " + interpolatedCsvPath)
 
 
 ## Process interpolated LF/HF values
@@ -234,24 +231,18 @@ def ProcessRowStringsFromInterpolatedCsv(interpolatedCsvColumns, rowStrings, pro
 
 def ProcessLFHF(interpolatedCsvPath, interpolatedCsvEncoding, interpolatedCsvColumns,
                 processedCsvPath, processedCsvEncoding):
-    print("Start to process LF/HF from: " + interpolatedCsvPath)
     with open(interpolatedCsvPath, mode="r", encoding=interpolatedCsvEncoding) as interpolatedCsv:
         with open(processedCsvPath, mode="w", encoding=processedCsvEncoding) as processedCsv:
             headers = interpolatedCsv.readline().strip()
             processedCsv.write(headers + ",LFHF(Element),LFHF(Element:Delta)\n")
             rowStrings = interpolatedCsv.readlines()
             ProcessRowStringsFromInterpolatedCsv(interpolatedCsvColumns, rowStrings, processedCsv)
-    print("Saved: " + processedCsvPath)
-
+    print("Successfully saved: " + processedCsvPath)
 
 
 # Main Function
 def Main(identifierString, rawCsvPath, rawCsvEncoding, outputCsvEncoding, outputDir, writeLFHFComputedRowsWhenInterpolateLFHF):
-    formattedOutputDir = outputDir
-    if outputDir[-1] == "/":
-        formattedOutputDir = outputDir[0:-1]
-
-    filteredCsvPath = formattedOutputDir + "/eta_step_1_filtered_rows_" + identifierString + ".csv"
+    filteredCsvPath = outputDir + identifierString + "/" + identifierString + "_step_1_filtered_rows.csv"
     filteredCsvEncoding = outputCsvEncoding
     filteredCsvColumns = {
         "EventID": 0,
@@ -262,7 +253,7 @@ def Main(identifierString, rawCsvPath, rawCsvEncoding, outputCsvEncoding, output
         "AriaLabel": 5,
         "LFHF": 6
     }
-    categorizedCsvPath = formattedOutputDir + "/eta_step_2_categorized_" + identifierString + ".csv"
+    categorizedCsvPath = outputDir + identifierString + "/" + identifierString + "_step_2_categorized.csv"
     categorizedCsvEncoding = outputCsvEncoding
     categorizedCsvColumns = {
         "Number": 0,
@@ -277,7 +268,7 @@ def Main(identifierString, rawCsvPath, rawCsvEncoding, outputCsvEncoding, output
         "LFHF": 9,
         "TimeSpan": 10
     }
-    interpolatedCsvPath = formattedOutputDir + "/eta_step_3_interpolated_lfhf_" + identifierString + ".csv"
+    interpolatedCsvPath = outputDir + identifierString + "/" + identifierString + "_step_3_interpolated_lfhf.csv"
     interpolatedCsvEncoding = outputCsvEncoding
     interpolatedCsvColumns = {
         "Number": 0,
@@ -293,10 +284,8 @@ def Main(identifierString, rawCsvPath, rawCsvEncoding, outputCsvEncoding, output
         "TimeSpan": 10,
         "InterpolatedLFHF": 11
     }
-    processedCsvPath = formattedOutputDir + "/eta_step_4_processed_lfhf_" + identifierString + ".csv"
+    processedCsvPath = outputDir + identifierString + "/" + identifierString + "_step_4_processed_lfhf.csv"
     processedCsvEncoding = outputCsvEncoding
-
-    os.makedirs(formattedOutputDir, exist_ok=True)
 
     FilterRows(rawCsvPath, rawCsvEncoding,
                filteredCsvPath, filteredCsvEncoding)
@@ -330,4 +319,10 @@ if __name__ == "__main__":
                         help="Write \"LFHFComputed\" rows on \nLF/HF interpolation")
     args = parser.parse_args()
 
-    Main(args.identifier, args.source, args.input_encoding, args.output_encoding, args.output_dir, args.write_lfhf_computed)
+    # Get output directory path
+    formattedOutputDir = args.output_dir
+    if args.output_dir[-1] != "/":
+        formattedOutputDir = args.output_dir + "/"
+    os.makedirs(formattedOutputDir + args.identifier, exist_ok=True)
+
+    Main(args.identifier, args.source, args.input_encoding, args.output_encoding, formattedOutputDir, args.write_lfhf_computed)

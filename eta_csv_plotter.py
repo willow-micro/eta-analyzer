@@ -45,7 +45,7 @@ def SetPlotMarginFor1PlotWithXTime():
     plt.rcParams["figure.subplot.hspace"] = plt.rcParamsDefault["figure.subplot.hspace"]
 
 def SetPlotMarginFor1PlotWithXTimeYCategories():
-    plt.rcParams["figure.subplot.left"] = 0.22
+    plt.rcParams["figure.subplot.left"] = 0.23
     plt.rcParams["figure.subplot.right"] = 0.90
     plt.rcParams["figure.subplot.bottom"] = plt.rcParamsDefault["figure.subplot.bottom"]
     plt.rcParams["figure.subplot.top"] = 0.93
@@ -81,7 +81,7 @@ def ProcessFixationTimeSummary(identifier, df, figurePath):
                            xlabel="Category of HTML elements", ylabel="Mean fixation time [ms]", colormap=Colormaps[1])
     plt.savefig(figurePath)
     plt.close("all")
-    print("Successfully saved " + figurePath)
+    print("Successfully saved: " + figurePath)
 
 def CreateDataFrameForCategorizedPlotFrom(df):
     #print(df.columns)
@@ -117,7 +117,7 @@ def ProcessFixatedCategoryTimeSeries(identifier, df, figurePath):
            ylabel="Category of HTML elements")
     plt.savefig(figurePath)
     plt.close("all")
-    print("Successfully saved " + figurePath)
+    print("Successfully saved: " + figurePath)
 
 
 def ProcessLFHFSummary(identifier, df, figurePath):
@@ -148,7 +148,7 @@ def ProcessLFHFSummary(identifier, df, figurePath):
                            xlabel="Category of HTML elements", ylabel="Mean LF/HF", colormap=Colormaps[1])
     plt.savefig(figurePath)
     plt.close("all")
-    print("Successfully saved " + figurePath)
+    print("Successfully saved: " + figurePath)
 
 def CreateDataFrameForLFHFPlotFrom(df):
     # print(df.columns)
@@ -170,7 +170,7 @@ def ProcessLFHFTimeSeries(identifier, df, figurePath):
                    style=["o-"], ms=3)
     plt.savefig(figurePath)
     plt.close("all")
-    print("Successfully saved " + figurePath)
+    print("Successfully saved: " + figurePath)
 
 def ProcessFixatedCategoryAndLFHFTimeSeries(identifier, df, figurePath):
     dfForLFHF = CreateDataFrameForLFHFPlotFrom(df)
@@ -192,34 +192,33 @@ def ProcessFixatedCategoryAndLFHFTimeSeries(identifier, df, figurePath):
            ylabel="Category of HTML elements")
     plt.savefig(figurePath)
     plt.close("all")
-    print("Successfully saved " + figurePath)
+    print("Successfully saved: " + figurePath)
 
 
 # Main Function
 def Main(identifierString, processedCsvPath, processedCsvEncoding, outputDir, outputFormat):
-
     # Create dataframe
     df = CreateDataFrameFrom(processedCsvPath, processedCsvEncoding)
     dfFiltered = df.drop(["EventID", "ServerTime", "LFHF", "LFHF(Interpolated)"], axis=1)
 
     # Fixation time summary
-    fixationTimeSummaryFigurePath = outputDir + "/eta_fixation_time_summary_" + identifierString + "." + outputFormat
+    fixationTimeSummaryFigurePath = outputDir + identifierString + "/" + identifierString + "_fixation_time_summary." + outputFormat
     ProcessFixationTimeSummary(identifierString, dfFiltered, fixationTimeSummaryFigurePath)
 
     # Fixated category time series
-    fixatedCategoryTimeSeriesFigurePath = outputDir + "/eta_fixated_category_time_series_" + identifierString + "." + outputFormat
+    fixatedCategoryTimeSeriesFigurePath = outputDir + identifierString + "/" + identifierString + "_fixated_category_time_series." + outputFormat
     ProcessFixatedCategoryTimeSeries(identifierString, dfFiltered, fixatedCategoryTimeSeriesFigurePath)
 
     # LF/HF summary
-    lfhfSummaryFigurePath = outputDir + "/eta_lfhf_summary_" + identifierString + "." + outputFormat
+    lfhfSummaryFigurePath = outputDir + identifierString + "/" + identifierString + "_lfhf_summary." + outputFormat
     ProcessLFHFSummary(identifierString, dfFiltered, lfhfSummaryFigurePath)
 
     # LF/HF time series
-    lfhfTimeSeriesFigurePath = outputDir + "/eta_lfhf_time_series_" + identifierString + "." + outputFormat
+    lfhfTimeSeriesFigurePath = outputDir + identifierString + "/" + identifierString + "_lfhf_time_series." + outputFormat
     ProcessLFHFTimeSeries(identifierString, dfFiltered, lfhfTimeSeriesFigurePath)
 
     # Fixated category and LF/HF time series
-    fixatedCategoryTimeAndLFHFSeriesFigurePath = outputDir + "/eta_fixated_category_and_lfhf_time_series_" + identifierString + "." + outputFormat
+    fixatedCategoryTimeAndLFHFSeriesFigurePath = outputDir + identifierString + "/" + identifierString + "_fixated_category_and_lfhf_time_series." + outputFormat
     ProcessFixatedCategoryAndLFHFTimeSeries(identifierString, dfFiltered, fixatedCategoryTimeAndLFHFSeriesFigurePath)
 
 
@@ -249,9 +248,9 @@ if __name__ == "__main__":
 
     # Get output directory path
     formattedOutputDir = args.output_dir
-    if args.output_dir[-1] == "/":
-        formattedOutputDir = args.output_dir[0:-1]
-    os.makedirs(formattedOutputDir, exist_ok=True)
+    if args.output_dir[-1] != "/":
+        formattedOutputDir = args.output_dir + "/"
+    os.makedirs(formattedOutputDir + args.identifier, exist_ok=True)
 
     # Set pyplot configs
     plt.rcParams["figure.figsize"] = args.output_size
