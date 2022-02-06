@@ -21,7 +21,7 @@ import seaborn as sns
 # Configs
 
 # Global Variables
-Colormaps = ["Pastel1", "Pastel2"]
+Colormaps = ["Dark2", "tab10"]
 
 # Functions
 def CreateDataFrameFrom(csvPath, csvEncoding):
@@ -188,7 +188,7 @@ def ProcessFixatedCategoryAndLFHFTimeSeries(identifier, df, figurePath):
                    x="AppTime", y="LFHF(Element)",
                    kind="line", title="Fixated categories and LF/HF ratio (" + identifier + ")", legend=None, grid=True,
                    xlabel="Time [s]", ylabel="LF/HF ratio for each element in HTML", colormap=Colormaps[0],
-                   style=["x-"], ms=3.5, lw=1, alpha=0.5)
+                   style=["x-"], ms=3.5, lw=2, alpha=0.5)
     sp = sns.stripplot(ax=axBase,
                        data=dfForCategories, x=dfForCategories["AppTimeSec"], y=dfForCategories["Category"],
                        order=sorted(dfForCategories["Category"].unique().tolist()),
