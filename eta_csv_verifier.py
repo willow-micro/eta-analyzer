@@ -64,13 +64,13 @@ def SetPlotMarginFor1PlotWithXTimeYCategories():
     plt.rcParams["figure.subplot.hspace"] = plt.rcParamsDefault["figure.subplot.hspace"]
 
 
-def MinMaxNormalizeColumns(df, columnNames):
-    result = df.copy()
-    for columnName in columnNames:
-        maxValue = df[columnName].max()
-        minValue = df[columnName].min()
-        result[columnName] = (df[columnName] - minValue) / (maxValue - minValue)
-    return result
+# def MinMaxNormalizeColumns(df, columnNames):
+#     result = df.copy()
+#     for columnName in columnNames:
+#         maxValue = df[columnName].max()
+#         minValue = df[columnName].min()
+#         result[columnName] = (df[columnName] - minValue) / (maxValue - minValue)
+#     return result
 
 def ProcessFixationTimeAndScore(identifier, df, dfInt, figurePath):
     #print(df.columns)
@@ -83,40 +83,77 @@ def ProcessFixationTimeAndScore(identifier, df, dfInt, figurePath):
     dfMeanFiltered = dfPivotMean.drop([0, 17, 18, 19]).reset_index()
 
     dfSumFiltered.insert(len(dfSumFiltered.columns), "Score", dfInt[1].astype("float"))
+    dfSumFiltered.set_index("Category", inplace=True)
     dfMeanFiltered.insert(len(dfMeanFiltered.columns), "Score", dfInt[1].astype("float"))
+    dfMeanFiltered.set_index("Category", inplace=True)
 
     # print(dfSumFiltered)
     # print(dfMeanFiltered)
 
-    dfNormSumScore = MinMaxNormalizeColumns(dfSumFiltered, ["Total fixation time", "Score"]).set_index("Category")
-    dfNormMeanScore = MinMaxNormalizeColumns(dfMeanFiltered, ["Mean fixation time", "Score"]).set_index("Category")
-
-    # print(dfNormSumScore)
-    # print(dfNormMeanScore)
+    sumCorrMat = dfSumFiltered.corr()
+    sumCorr = sumCorrMat["Total fixation time"]["Score"]
+    meanCorrMat = dfMeanFiltered.corr()
+    meanCorr = meanCorrMat["Mean fixation time"]["Score"]
+    # print(sumCorrMat)
+    # print(meanCorrMat)
+    print("Correlation between Total fixation time and Score: " + f"{sumCorr:.3f}")
+    print("Correlation between Mean fixation time and Score: " + f"{meanCorr:.3f}")
 
     SetPlotMarginFor4PlotsWithXCategories()
     currentFigSize = list(plt.rcParams["figure.figsize"])
     multiFigSize = [currentFigSize[0] * 2, currentFigSize[1] * 2]
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
-    dfNormSumScore["Total fixation time"].plot(ax=axes[0, 0],
-                                               kind="bar", title="Normalized total fixation time (" + identifier + ")",
-                                               xlabel="Category of elements in HTML", ylabel="Normalized total fixation time",
-                                               legend=None, grid=True, colormap=Colormaps[0])
-    dfNormSumScore["Score"].plot(ax=axes[1, 0],
-                                 kind="bar", title="Normalized scores (" + identifier + ")",
-                                 xlabel="Category of elements in HTML", ylabel="Normalized user scores from the interview",
-                                 legend=None, grid=True, colormap=Colormaps[0])
-    dfNormMeanScore["Mean fixation time"].plot(ax=axes[0, 1],
-                                               kind="bar", title="Normalized mean fixation time (" + identifier + ")",
-                                               xlabel="Category of elements in HTML", ylabel="Normalized mean fixation time",
-                                               legend=None, grid=True, colormap=Colormaps[1])
-    dfNormMeanScore["Score"].plot(ax=axes[1, 1],
-                                  kind="bar", title="Normalized scores (" + identifier + ")",
-                                  xlabel="Category of elements in HTML", ylabel="Normalized user scores from the interview",
-                                  legend=None, grid=True, colormap=Colormaps[1])
+    dfSumFiltered["Total fixation time"].plot(ax=axes[0, 0],
+                                              kind="bar", title="Total fixation time (" + identifier + ")",
+                                              xlabel="Category of elements in HTML", ylabel="Total fixation time [ms]",
+                                              legend=None, grid=True, colormap=Colormaps[0])
+    dfSumFiltered["Score"].plot(ax=axes[1, 0],
+                                kind="bar", title="User scores (" + identifier + ")",
+                                xlabel="Category of elements in HTML", ylabel="User scores from the interview",
+                                legend=None, grid=True, colormap=Colormaps[0])
+    dfMeanFiltered["Mean fixation time"].plot(ax=axes[0, 1],
+                                              kind="bar", title="Mean fixation time (" + identifier + ")",
+                                              xlabel="Category of elements in HTML", ylabel="Mean fixation time [ms]",
+                                              legend=None, grid=True, colormap=Colormaps[1])
+    dfMeanFiltered["Score"].plot(ax=axes[1, 1],
+                                 kind="bar", title="User scores (" + identifier + ")",
+                                 xlabel="Category of elements in HTML", ylabel="User scores from the interview",
+                                 legend=None, grid=True, colormap=Colormaps[1])
     plt.savefig(figurePath)
     plt.close("all")
     print("Successfully saved: " + figurePath)
+
+    # dfNormSumScore = MinMaxNormalizeColumns(dfSumFiltered, ["Total fixation time", "Score"])
+    # dfNormMeanScore = MinMaxNormalizeColumns(dfMeanFiltered, ["Mean fixation time", "Score"])
+
+    # print(dfNormSumScore)
+    # print(dfNormMeanScore)
+    # print(dfNormSumScore.corr())
+    # print(dfNormMeanScore.corr())
+
+    # SetPlotMarginFor4PlotsWithXCategories()
+    # currentFigSize = list(plt.rcParams["figure.figsize"])
+    # multiFigSize = [currentFigSize[0] * 2, currentFigSize[1] * 2]
+    # fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
+    # dfNormSumScore["Total fixation time"].plot(ax=axes[0, 0],
+    #                                            kind="bar", title="Normalized total fixation time (" + identifier + ")",
+    #                                            xlabel="Category of elements in HTML", ylabel="Normalized total fixation time",
+    #                                            legend=None, grid=True, colormap=Colormaps[0])
+    # dfNormSumScore["Score"].plot(ax=axes[1, 0],
+    #                              kind="bar", title="Normalized scores (" + identifier + ")",
+    #                              xlabel="Category of elements in HTML", ylabel="Normalized user scores from the interview",
+    #                              legend=None, grid=True, colormap=Colormaps[0])
+    # dfNormMeanScore["Mean fixation time"].plot(ax=axes[0, 1],
+    #                                            kind="bar", title="Normalized mean fixation time (" + identifier + ")",
+    #                                            xlabel="Category of elements in HTML", ylabel="Normalized mean fixation time",
+    #                                            legend=None, grid=True, colormap=Colormaps[1])
+    # dfNormMeanScore["Score"].plot(ax=axes[1, 1],
+    #                               kind="bar", title="Normalized scores (" + identifier + ")",
+    #                               xlabel="Category of elements in HTML", ylabel="Normalized user scores from the interview",
+    #                               legend=None, grid=True, colormap=Colormaps[1])
+    # plt.savefig(figurePath)
+    # plt.close("all")
+    # print("Successfully saved: " + figurePath)
 
 def ProcessLFHFAndScore(identifier, df, dfInt, figurePath):
     #print(df.columns)
@@ -130,39 +167,76 @@ def ProcessLFHFAndScore(identifier, df, dfInt, figurePath):
 
     dfDeltaSumFiltered.insert(len(dfDeltaSumFiltered.columns), "Score", dfInt[1].astype("float"))
     dfMeanFiltered.insert(len(dfMeanFiltered.columns), "Score", dfInt[1].astype("float"))
+    dfDeltaSumFiltered.set_index("Category", inplace=True)
+    dfMeanFiltered.set_index("Category", inplace=True)
 
     # print(dfDeltaSumFiltered)
     # print(dfMeanFiltered)
 
-    dfNormDeltaSumScore = MinMaxNormalizeColumns(dfDeltaSumFiltered, ["Total LF/HF Delta", "Score"]).set_index("Category")
-    dfNormMeanScore = MinMaxNormalizeColumns(dfMeanFiltered, ["Mean LF/HF", "Score"]).set_index("Category")
-
-    # print(dfNormDeltaSumScore)
-    # print(dfNormMeanScore)
+    deltaSumCorrMat = dfDeltaSumFiltered.corr()
+    deltaSumCorr = deltaSumCorrMat["Total LF/HF Delta"]["Score"]
+    meanCorrMat = dfMeanFiltered.corr()
+    meanCorr = meanCorrMat["Mean LF/HF"]["Score"]
+    # print(deltaSumCorrMat)
+    # print(meanCorrMat)
+    print("Correlation between Total LF/HF Delta and Score: " + f"{deltaSumCorr:.3f}")
+    print("Correlation between Mean LF/HF and Score: " + f"{meanCorr:.3f}")
 
     SetPlotMarginFor4PlotsWithXCategories()
     currentFigSize = list(plt.rcParams["figure.figsize"])
     multiFigSize = [currentFigSize[0] * 2, currentFigSize[1] * 2]
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
-    dfNormDeltaSumScore["Total LF/HF Delta"].plot(ax=axes[0, 0],
-                                                                kind="bar", title="Normalized total LF/HF delta (" + identifier + ")",
-                                                                xlabel="Category of elements in HTML", ylabel="Normalized total LF/HF delta",
+    dfDeltaSumFiltered["Total LF/HF Delta"].plot(ax=axes[0, 0],
+                                                 kind="bar", title="Total LF/HF delta (" + identifier + ")",
+                                                                xlabel="Category of elements in HTML", ylabel="Total LF/HF delta",
                                                                 legend=None, grid=True, colormap=Colormaps[0])
-    dfNormDeltaSumScore["Score"].plot(ax=axes[1, 0],
-                                                    kind="bar", title="Normalized scores (" + identifier + ")",
-                                                    xlabel="Category of elements in HTML", ylabel="Normalized user scores from the interview",
+    dfDeltaSumFiltered["Score"].plot(ax=axes[1, 0],
+                                                    kind="bar", title="User scores (" + identifier + ")",
+                                                    xlabel="Category of elements in HTML", ylabel="User scores from the interview",
                                                     legend=None, grid=True, colormap=Colormaps[0])
-    dfNormMeanScore["Mean LF/HF"].plot(ax=axes[0, 1],
-                                                     kind="bar", title="Normalized mean LF/HF (" + identifier + ")",
-                                                     xlabel="Category of elements in HTML", ylabel="Normalized mean LF/HF",
+    dfMeanFiltered["Mean LF/HF"].plot(ax=axes[0, 1],
+                                                     kind="bar", title="Mean LF/HF (" + identifier + ")",
+                                                     xlabel="Category of elements in HTML", ylabel="Mean LF/HF",
                                                      legend=None, grid=True, colormap=Colormaps[1])
-    dfNormMeanScore["Score"].plot(ax=axes[1, 1],
-                                                kind="bar", title="Normalized scores (" + identifier + ")",
-                                                xlabel="Category of elements in HTML", ylabel="Normalized user scores from the interview",
+    dfMeanFiltered["Score"].plot(ax=axes[1, 1],
+                                                kind="bar", title="User scores (" + identifier + ")",
+                                                xlabel="Category of elements in HTML", ylabel="User scores from the interview",
                                                 legend=None, grid=True, colormap=Colormaps[1])
     plt.savefig(figurePath)
     plt.close("all")
     print("Successfully saved: " + figurePath)
+
+    # dfNormDeltaSumScore = MinMaxNormalizeColumns(dfDeltaSumFiltered, ["Total LF/HF Delta", "Score"])
+    # dfNormMeanScore = MinMaxNormalizeColumns(dfMeanFiltered, ["Mean LF/HF", "Score"])
+
+    # print(dfNormDeltaSumScore)
+    # print(dfNormMeanScore)
+    # print(dfNormDeltaSumScore.corr())
+    # print(dfNormMeanScore.corr())
+
+    # SetPlotMarginFor4PlotsWithXCategories()
+    # currentFigSize = list(plt.rcParams["figure.figsize"])
+    # multiFigSize = [currentFigSize[0] * 2, currentFigSize[1] * 2]
+    # fig, axes = plt.subplots(nrows=2, ncols=2, figsize=tuple(multiFigSize))
+    # dfNormDeltaSumScore["Total LF/HF Delta"].plot(ax=axes[0, 0],
+    #                                                             kind="bar", title="Normalized total LF/HF delta (" + identifier + ")",
+    #                                                             xlabel="Category of elements in HTML", ylabel="Normalized total LF/HF delta",
+    #                                                             legend=None, grid=True, colormap=Colormaps[0])
+    # dfNormDeltaSumScore["Score"].plot(ax=axes[1, 0],
+    #                                                 kind="bar", title="Normalized scores (" + identifier + ")",
+    #                                                 xlabel="Category of elements in HTML", ylabel="Normalized user scores from the interview",
+    #                                                 legend=None, grid=True, colormap=Colormaps[0])
+    # dfNormMeanScore["Mean LF/HF"].plot(ax=axes[0, 1],
+    #                                                  kind="bar", title="Normalized mean LF/HF (" + identifier + ")",
+    #                                                  xlabel="Category of elements in HTML", ylabel="Normalized mean LF/HF",
+    #                                                  legend=None, grid=True, colormap=Colormaps[1])
+    # dfNormMeanScore["Score"].plot(ax=axes[1, 1],
+    #                                             kind="bar", title="Normalized scores (" + identifier + ")",
+    #                                             xlabel="Category of elements in HTML", ylabel="Normalized user scores from the interview",
+    #                                             legend=None, grid=True, colormap=Colormaps[1])
+    # plt.savefig(figurePath)
+    # plt.close("all")
+    # print("Successfully saved: " + figurePath)
 
 
 # Main Function
