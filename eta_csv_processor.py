@@ -316,7 +316,7 @@ if __name__ == "__main__":
     parser.add_argument("-E", "--output-encoding", type=str, choices=["utf_8", "shift_jis"], default="shift_jis",
                         help="Encoding of output csv files \n (default: shift_jis)")
     parser.add_argument("--write-lfhf-computed", action="store_true",
-                        help="Write \"LFHFComputed\" rows on \nLF/HF interpolation")
+                        help="Write \"LFHFComputed\" rows or not")
     args = parser.parse_args()
 
     # Get output directory path
